@@ -33,4 +33,4 @@ yarn.lock
 .yarn
 
 #cursor
-# .cursor/
+.cursor/
