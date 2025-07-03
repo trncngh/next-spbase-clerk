@@ -1,26 +1,39 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { getCurrentUser } from "@/lib/auth"
-import { prisma } from "@/lib/db"
-import { Users, FileText, Shield, Activity } from "lucide-react"
+import { Badge } from '@/components/ui/badge';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { getCurrentUser } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
+import { Activity, FileText, Shield, Users } from 'lucide-react';
 
 export default async function DashboardPage() {
-  const user = await getCurrentUser()
+  const user = await getCurrentUser();
 
   // Get some stats
-  const [userCount, postCount] = await Promise.all([prisma.user.count(), prisma.post.count()])
+  const [userCount, postCount] = await Promise.all([
+    prisma.user.count(),
+    prisma.post.count(),
+  ]);
 
   const userPosts = await prisma.post.findMany({
     where: { authorId: user?.id },
     take: 5,
-    orderBy: { createdAt: "desc" },
-  })
+    orderBy: { createdAt: 'desc' },
+  });
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100">Welcome back, {user?.firstName}!</h1>
-        <p className="text-slate-600 dark:text-slate-300">Here's what's happening with your account.</p>
+        <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100">
+          Welcome back, {user?.firstName}!
+        </h1>
+        <p className="text-slate-600 dark:text-slate-300">
+          Here's what's happening with your account.
+        </p>
       </div>
 
       {/* Stats Cards */}
@@ -31,7 +44,15 @@ export default async function DashboardPage() {
             <Shield className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <Badge variant={user?.role === "ADMIN" ? "default" : user?.role === "EDITOR" ? "secondary" : "outline"}>
+            <Badge
+              variant={
+                user?.role === 'ADMIN'
+                  ? 'default'
+                  : user?.role === 'EDITOR'
+                    ? 'secondary'
+                    : 'outline'
+              }
+            >
               {user?.role}
             </Badge>
           </CardContent>
@@ -78,22 +99,29 @@ export default async function DashboardPage() {
           {userPosts.length > 0 ? (
             <div className="space-y-4">
               {userPosts.map((post) => (
-                <div key={post.id} className="flex items-center justify-between p-4 border rounded-lg">
+                <div
+                  key={post.id}
+                  className="flex items-center justify-between p-4 border rounded-lg"
+                >
                   <div>
                     <h3 className="font-medium">{post.title}</h3>
-                    <p className="text-sm text-slate-600 dark:text-slate-300">{post.content?.substring(0, 100)}...</p>
+                    <p className="text-sm text-slate-600 dark:text-slate-300">
+                      {post.content?.substring(0, 100)}...
+                    </p>
                   </div>
-                  <Badge variant={post.published ? "default" : "secondary"}>
-                    {post.published ? "Published" : "Draft"}
+                  <Badge variant={post.published ? 'default' : 'secondary'}>
+                    {post.published ? 'Published' : 'Draft'}
                   </Badge>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-slate-600 dark:text-slate-300">You haven't created any posts yet.</p>
+            <p className="text-slate-600 dark:text-slate-300">
+              You haven't created any posts yet.
+            </p>
           )}
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
