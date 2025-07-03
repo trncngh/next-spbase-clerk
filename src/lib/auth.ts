@@ -1,6 +1,7 @@
-import { auth, currentUser } from "@clerk/nextjs/server"
-import { prisma } from "./db"
-import { Role } from "@prisma/client"
+import { upsertUser } from '@/lib/service/prisma/user.service'
+import { auth, currentUser } from '@clerk/nextjs/server'
+import { Role } from '@prisma/client'
+import { prisma } from './prisma'
 
 export async function getCurrentUser() {
   const { userId } = await auth()
@@ -20,7 +21,7 @@ export async function requireAuth() {
   const user = await getCurrentUser()
 
   if (!user) {
-    throw new Error("Authentication required")
+    throw new Error('Authentication required')
   }
 
   return user
@@ -30,7 +31,7 @@ export async function requireRole(allowedRoles: Role[]) {
   const user = await requireAuth()
 
   if (!allowedRoles.includes(user.role)) {
-    throw new Error("Insufficient permissions")
+    throw new Error('Insufficient permissions')
   }
 
   return user
@@ -61,22 +62,12 @@ export async function syncUserWithClerk() {
     return null
   }
 
-  const user = await prisma.user.upsert({
-    where: { clerkId: clerkUser.id },
-    update: {
-      email: clerkUser.emailAddresses[0]?.emailAddress || "",
-      firstName: clerkUser.firstName,
-      lastName: clerkUser.lastName,
-      imageUrl: clerkUser.imageUrl,
-    },
-    create: {
-      clerkId: clerkUser.id,
-      email: clerkUser.emailAddresses[0]?.emailAddress || "",
-      firstName: clerkUser.firstName,
-      lastName: clerkUser.lastName,
-      imageUrl: clerkUser.imageUrl,
-      role: Role.USER, // Default role
-    },
+  const user = await upsertUser({
+    clerkId: clerkUser.id,
+    email: clerkUser.emailAddresses[0]?.emailAddress || '',
+    firstName: clerkUser.firstName,
+    lastName: clerkUser.lastName,
+    imageUrl: clerkUser.imageUrl,
   })
 
   return user
