@@ -22,7 +22,12 @@ export const upsertUser = async (newUser: Prisma.UserCreateInput) => {
   try {
     const user = await prisma.user.upsert({
       where: { clerkId: newUser.clerkId },
-      update: newUser,
+      update: {
+        firstName: newUser.firstName,
+        lastName: newUser.lastName,
+        email: newUser.email,
+        imageUrl: newUser.imageUrl
+      },
       create: newUser,
     })
     return user
